@@ -1,0 +1,44 @@
+services:
+  bd:
+    container_name: samuel_bd
+    image: mysql:8.0
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=street_connect
+    volumes:
+      - vol_bd:/var/lib/mysql
+    networks:
+      - appnet
+
+  backend:
+    container_name: samuel_back
+    restart: always
+    build: ./SocialEvents-SamuelAlbaDomingos-Back
+    depends_on:
+      - bd
+    ports:
+      - "8000:80"
+      - "8080:8080"
+    volumes:
+      - imagenes:/var/www/html/storage/app/public/imagenes
+    networks:
+      - appnet
+
+  frontend:
+    container_name: samuel_front
+    restart: always
+    build: ./SocialEvents-SamuelAlbaDomingos-Front
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - appnet
+
+volumes:
+  vol_bd:
+  imagenes:
+
+networks:
+  appnet:
