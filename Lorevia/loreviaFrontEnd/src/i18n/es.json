@@ -1,0 +1,146 @@
+{
+  "comun": {
+    "nombre": "Nombre",
+    "descripcion": "Descripción",
+    "email": "Email",
+    "contrasena": "Contraseña",
+    "editar": "Editar",
+    "eliminar": "Eliminar",
+    "eliminando": "Eliminando...",
+    "cancelar": "Cancelar",
+    "guardar": "Guardar",
+    "guardando": "Guardando..."
+  },
+  "idioma": {
+    "etiqueta": "Idioma",
+    "espanol": "Español",
+    "ingles": "English"
+  },
+  "nav": {
+    "aria": "Navegación principal",
+    "libros": "Libros",
+    "personajes": "Personajes",
+    "categorias": "Categorías",
+    "cerrarSesion": "Cerrar sesión"
+  },
+  "login": {
+    "titulo": "Iniciar sesión",
+    "placeholderEmail": "tu@email.com",
+    "placeholderContrasena": "Tu contraseña",
+    "cargando": "Iniciando sesión...",
+    "errorCredenciales": "Email o contraseña incorrectos.",
+    "enlaceRegistro": "¿No tienes cuenta? Regístrate"
+  },
+  "registro": {
+    "titulo": "Crear cuenta",
+    "nombreUsuario": "Nombre de usuario",
+    "placeholderNombreUsuario": "Cómo quieres que te llamen",
+    "nombreReal": "Nombre real",
+    "placeholderNombreReal": "Tu nombre",
+    "apellidos": "Apellidos",
+    "placeholderApellidos": "Tus apellidos",
+    "placeholderContrasena": "Crea una contraseña",
+    "confirmarContrasena": "Confirmar contraseña",
+    "placeholderConfirmacion": "Repite la contraseña",
+    "cargando": "Creando cuenta...",
+    "boton": "Registrarse",
+    "errorCampos": "Todos los campos son obligatorios.",
+    "errorEmail": "Introduce un email válido.",
+    "errorContrasenas": "Las contraseñas no coinciden.",
+    "errorRegistro": "No se pudo completar el registro. Inténtalo de nuevo.",
+    "enlaceLogin": "¿Ya tienes cuenta? Inicia sesión"
+  },
+  "modal": {
+    "cerrar": "Cerrar modal"
+  },
+  "libros": {
+    "titulo": "Libros",
+    "nuevo": "Nuevo libro",
+    "cargando": "Cargando libros...",
+    "vacio": "No hay libros registrados.",
+    "errorCargar": "No se pudieron cargar los libros.",
+    "verDetalle": "Ver detalle",
+    "modalNuevo": "Nuevo libro",
+    "modalEditar": "Editar libro",
+    "eliminarTitulo": "Eliminar libro",
+    "mensajeEliminar": "¿Seguro que quieres eliminar el libro \"{nombre}\"? Esta acción no se puede deshacer."
+  },
+  "libroDetalle": {
+    "cargando": "Cargando libro...",
+    "errorCargar": "No se pudo cargar el libro.",
+    "volver": "Volver al listado",
+    "noEncontrado": "Libro no encontrado.",
+    "autor": "Autor: {autor}",
+    "sinopsis": "Sinopsis",
+    "sinSinopsis": "Sin sinopsis.",
+    "categorias": "Categorías",
+    "sinCategorias": "No tiene categorías asignadas.",
+    "personajes": "Personajes",
+    "sinPersonajes": "No tiene personajes asignados."
+  },
+  "personajes": {
+    "titulo": "Personajes",
+    "nuevo": "Nuevo personaje",
+    "cargando": "Cargando personajes...",
+    "vacio": "No hay personajes registrados.",
+    "errorCargar": "No se pudieron cargar los personajes.",
+    "sinEspecificar": "Sin especificar",
+    "columnaNombre": "Nombre",
+    "columnaLugarOrigen": "Lugar de origen",
+    "columnaFechaNacimiento": "Fecha de nacimiento",
+    "columnaFechaMuerte": "Fecha de muerte",
+    "columnaLibros": "Libros",
+    "modalNuevo": "Nuevo personaje",
+    "modalEditar": "Editar personaje",
+    "eliminarTitulo": "Eliminar personaje",
+    "mensajeEliminar": "¿Seguro que quieres eliminar el personaje \"{nombre}\"? Esta acción no se puede deshacer."
+  },
+  "categorias": {
+    "titulo": "Categorías",
+    "nuevo": "Nueva categoría",
+    "cargando": "Cargando categorías...",
+    "vacio": "No hay categorías registradas.",
+    "errorCargar": "No se pudieron cargar las categorías.",
+    "columnaNombre": "Nombre",
+    "columnaDescripcion": "Descripción",
+    "modalNuevo": "Nueva categoría",
+    "modalEditar": "Editar categoría",
+    "eliminarTitulo": "Eliminar categoría",
+    "mensajeEliminar": "¿Seguro que quieres eliminar la categoría \"{nombre}\"? Esta acción no se puede deshacer."
+  },
+  "formularios": {
+    "cargandoOpciones": "Cargando opciones...",
+    "errorNombreObligatorio": "El nombre es obligatorio."
+  },
+  "formularioLibro": {
+    "placeholderNombre": "Nombre del libro",
+    "sinopsis": "Sinopsis",
+    "placeholderSinopsis": "Sinopsis del libro",
+    "categorias": "Categorías",
+    "personajes": "Personajes",
+    "errorOpciones": "No se pudieron cargar categorías y personajes.",
+    "errorGuardar": "No se pudo guardar el libro. Inténtalo de nuevo."
+  },
+  "formularioPersonaje": {
+    "placeholderNombre": "Nombre del personaje",
+    "lugarOrigen": "Lugar de origen",
+    "placeholderLugarOrigen": "Lugar de origen del personaje",
+    "fechaNacimiento": "Fecha de nacimiento",
+    "fechaMuerte": "Fecha de muerte",
+    "libros": "Libros",
+    "errorOpciones": "No se pudieron cargar los libros.",
+    "errorGuardar": "No se pudo guardar el personaje. Inténtalo de nuevo."
+  },
+  "formularioCategoria": {
+    "placeholderNombre": "Nombre de la categoría",
+    "placeholderDescripcion": "Descripción de la categoría",
+    "errorGuardar": "No se pudo guardar la categoría. Inténtalo de nuevo."
+  },
+  "tabla": {
+    "acciones": "Acciones",
+    "sinRegistros": "No hay registros."
+  },
+  "seleccionMultiple": {
+    "sinOpciones": "No hay opciones disponibles."
+  }
+}

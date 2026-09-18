@@ -6,8 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import com.lorevia.lorevia.dto.LibroRequest;
 import com.lorevia.lorevia.models.Libro;
 import com.lorevia.lorevia.services.LibroService;
+
+import jakarta.validation.Valid;
 
 
 @Controller
@@ -32,16 +35,28 @@ public class LibroController {
         return ResponseEntity.ok(libroService.findById(id));
     }
     @PostMapping
-    public ResponseEntity<Libro> save(@RequestBody Libro libro){
-        return ResponseEntity.status(HttpStatus.CREATED).body(libroService.save(libro));
+    public ResponseEntity<Libro> crear(@Valid @RequestBody LibroRequest request){
+        return ResponseEntity.status(HttpStatus.CREATED).body(libroService.crear(request));
     }
     @PutMapping("/{id}")
-    public ResponseEntity<Libro> update(@PathVariable Long id, @RequestBody Libro libro){
-        return ResponseEntity.ok(libroService.update(id, libro));
+    public ResponseEntity<Libro> actualizar(@PathVariable Long id, @Valid @RequestBody LibroRequest request){
+        return ResponseEntity.ok(libroService.actualizar(id, request));
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id){
         libroService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/{id}/categorias")
+    public ResponseEntity<Libro> asignarCategorias(@PathVariable Long id, @RequestBody List<Long> categoriasIds){
+        return ResponseEntity.ok(libroService.asignarCategorias(id, categoriasIds));
+    }
+    @DeleteMapping("/{id}/categorias/{idCategoria}")
+    public ResponseEntity<Libro> desasignarCategoria(@PathVariable Long id, @PathVariable Long idCategoria){
+        return ResponseEntity.ok(libroService.desasignarCategoria(id, idCategoria));
+    }
+    @PostMapping("/{id}/personajes")
+    public ResponseEntity<Libro> asignarPersonajes(@PathVariable Long id, @RequestBody List<Long> personajesIds){
+        return ResponseEntity.ok(libroService.asignarPersonajes(id, personajesIds));
     }
 }
