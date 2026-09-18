@@ -1,0 +1,105 @@
+/* =============================================================
+   Lorevia · Animaciones
+   ------------------------------------------------------------------
+   Criterios:
+   · Animaciones únicamente de entrada/aparición.
+   · Duración máxima 300 ms (entradas: 260 ms, transiciones: 160 ms).
+   · Sin retrasos perceptibles: el escalonado de tarjetas se limita
+     a los 3 primeros elementos y a 50 ms por paso.
+   · No bloquean la interacción (solo opacity/transform, con
+     fill-mode backwards para no pisar los hover de transformación).
+   · Se desactivan por completo para usuarios con preferencia de
+     movimiento reducido.
+   ============================================================= */
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-overlay-entrada {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-contenido-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes nav-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---- Aplicaciones ---- */
+
+/* Navbar: aparición suave al montar */
+.nav-bar {
+  animation: nav-entrada var(--duracion-entrada) var(--curva-suave) backwards;
+}
+
+/* Apertura de modales: fade + ligero slide/scale */
+.modal-overlay {
+  animation: modal-overlay-entrada var(--duracion-entrada) var(--curva-suave) backwards;
+}
+
+.modal-content {
+  animation: modal-contenido-entrada var(--duracion-entrada) var(--curva-suave) backwards;
+}
+
+/* Entrada de listas / detalle / tarjetas: fade-in sutil */
+.grid-libros > .libro-card,
+.detalle-libro,
+.table,
+.auth-card,
+.estado-vacio,
+.estado-cargando,
+.pagina-titulo {
+  animation: aparecer var(--duracion-entrada) var(--curva-suave) backwards;
+}
+
+/* Escalonado sutil, limitado a los primeros libros */
+.grid-libros > .libro-card:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.grid-libros > .libro-card:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+/* =============================================================
+   Accesibilidad: respetar preferencia de movimiento reducido
+   ============================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

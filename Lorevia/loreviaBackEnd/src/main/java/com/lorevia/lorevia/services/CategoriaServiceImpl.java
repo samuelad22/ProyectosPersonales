@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.lorevia.lorevia.Repositories.CategoriaRepository;
+import com.lorevia.lorevia.dto.CategoriaRequest;
 import com.lorevia.lorevia.models.Categoria;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -34,15 +35,18 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     @Override
-    public Categoria save(Categoria categoria) {
+    public Categoria crear(CategoriaRequest request) {
+        Categoria categoria = new Categoria();
+        categoria.setNombre(request.nombre());
+        categoria.setDescripcion(request.descripcion());
         return categoriaRepository.save(categoria);
     }
 
     @Override
-    public Categoria update(Long id, Categoria categoria) {
+    public Categoria actualizar(Long id, CategoriaRequest request) {
         Categoria existing = categoriaRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Categoria no encontrada"));
-        existing.setNombre(categoria.getNombre());
-        existing.setDescripcion(categoria.getDescripcion());
+        existing.setNombre(request.nombre());
+        existing.setDescripcion(request.descripcion());
         return categoriaRepository.save(existing);
     }
 

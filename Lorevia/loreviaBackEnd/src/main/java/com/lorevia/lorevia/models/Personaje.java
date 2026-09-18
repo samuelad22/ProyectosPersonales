@@ -3,6 +3,8 @@ package com.lorevia.lorevia.models;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -33,8 +35,10 @@ public class Personaje {
     @Embedded
     private InformacionPersonaje informacionPersonaje;
     @OneToMany(mappedBy = "personajeOrigen")
+    @JsonIgnore
     private Set<Parentesco> parentescosOrigen = new HashSet<>();
     @OneToMany(mappedBy = "personajeDestino")
+    @JsonIgnore
     private Set<Parentesco> parentescosDestino = new HashSet<>();
     @ManyToMany
     @JoinTable(
@@ -42,5 +46,6 @@ public class Personaje {
         joinColumns = @JoinColumn(name = "personaje_id"),
         inverseJoinColumns = @JoinColumn(name = "libro_id")
     )
+    @JsonIgnore
     private Set<Libro> libros = new HashSet<>();
 }

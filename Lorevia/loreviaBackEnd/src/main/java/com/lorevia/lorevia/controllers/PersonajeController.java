@@ -7,8 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import com.lorevia.lorevia.dto.PersonajeRequest;
 import com.lorevia.lorevia.models.Personaje;
 import com.lorevia.lorevia.services.PersonajeService;
+
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/api/personajes")
@@ -36,18 +39,23 @@ public class PersonajeController {
     }
 
     @PostMapping
-    public ResponseEntity<Personaje> save(@RequestBody Personaje personaje) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(personajeService.save(personaje));
+    public ResponseEntity<Personaje> crear(@Valid @RequestBody PersonajeRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(personajeService.crear(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Personaje> update(@PathVariable Long id, @RequestBody Personaje personaje) {
-        return ResponseEntity.ok(personajeService.update(id, personaje));
+    public ResponseEntity<Personaje> actualizar(@PathVariable Long id, @Valid @RequestBody PersonajeRequest request) {
+        return ResponseEntity.ok(personajeService.actualizar(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         personajeService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/libros")
+    public ResponseEntity<Personaje> asignarLibros(@PathVariable Long id, @RequestBody List<Long> librosIds) {
+        return ResponseEntity.ok(personajeService.asignarLibros(id, librosIds));
     }
 }

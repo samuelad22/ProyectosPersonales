@@ -1,111 +1,134 @@
+/* =============================================================
+   Lorevia · Tema visual (paleta, tipografía y tokens globales)
+   ------------------------------------------------------------------
+   Paleta del proyecto (referencia para todo el CSS):
+
+     #7371FC  primario        botón principal, enlaces activos, foco
+     #A594F9  secundario      hovers suaves, elementos secundarios, gradientes
+     #CDC1FF  terciario       chips, badges, píldoras de selección, acentos
+     #F5EFFF  fondo claro     fondo de la app y superficies
+     #E5D9F2  fondo alterno   tarjetas alternas, filas de tabla,
+                              bordes suaves, hovers neutros
+
+   Criterios de uso:
+   · El primario se reserva para acciones principales y el foco
+     visible (:focus-visible). Nunca se usa como superficie.
+   · El secundario se usa para elementos secundarios, hovers suaves
+     y los gradientes decorativos de las páginas de autenticación.
+   · El terciario se usa en acentos de bajo peso visual: chips,
+     píldoras de selección marcadas y bordes de selección.
+   · Los fondos claros (F5EFFF / E5D9F2) y la superficie blanca
+     estructuran la interfaz; sobre ellos el texto usa violeta
+     oscuro (--color-texto) para garantizar contraste AA.
+   · El peligro mantiene la familia cromática (rojo-magenta) para
+     no romper la armonía con el resto de la paleta.
+   ============================================================= */
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Paleta principal */
+  --color-primario: #7371fc;
+  --color-primario-hover: #8e8cf8;
+  --color-primario-activo: #5f5cf0;
+  --color-primario-contraste: #ffffff;
+  --color-secundario: #a594f9;
+  --color-secundario-hover: #b9aefb;
+  --color-terciario: #cdc1ff;
+  --color-terciario-hover: #dcd3ff;
+  --color-terciario-suave: #ede6fc;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Superficies y fondos */
+  --color-fondo: #f5efff;
+  --color-fondo-alternativo: #e5d9f2;
+  --color-superficie: #ffffff;
+  --color-superficie-alternativa: #f4effb;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Bordes y foco */
+  --color-borde: #e5d9f2;
+  --color-borde-fuerte: #cdc1ff;
+  --color-enfoque: #7371fc;
+  --color-enfoque-anillo: rgba(115, 113, 252, 0.22);
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  /* Texto (violeta oscuro legible sobre fondos claros) */
+  --color-texto: #2c2450;
+  --color-muted: #6e6590;
+
+  /* Peligro (rojo-magenta armonizado con la paleta) */
+  --color-peligro: #c63e63;
+  --color-peligro-hover: #da5e82;
+  --color-peligro-activo: #a93252;
+  --color-peligro-contraste: #ffffff;
+
+  /* Geometría */
+  --radio-borde: 0.625rem;
+  --radio-borde-suave: 0.875rem;
+  --radio-pildora: 999px;
+  --espaciado-unitario: 0.25rem;
+
+  /* Sombras */
+  --sombra-suave: 0 1px 2px rgba(44, 36, 80, 0.04), 0 4px 16px rgba(44, 36, 80, 0.07);
+  --sombra-media: 0 2px 4px rgba(44, 36, 80, 0.05), 0 12px 28px rgba(115, 113, 252, 0.16);
+  --sombra-modal: 0 16px 48px rgba(44, 36, 80, 0.28);
+
+  /* Tipografía (Inter, con apoyo de fuentes de sistema) */
+  --fuente-principal: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --tamano-titulo-pagina: 1.5rem;
+  --tamano-titulo-tarjeta: 1.125rem;
+  --tamano-titulo-detalle: 1.75rem;
+  --tamano-cuerpo: 1rem;
+  --tamano-pie: 0.875rem;
+
+  /* Movimiento (siempre ≤ 300 ms, ver src/styles/animaciones.css) */
+  --duracion-transicion: 160ms;
+  --duracion-entrada: 260ms;
+  --curva-suave: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+html {
+  color-scheme: light;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+
+body {
+  font-family: var(--fuente-principal);
+  font-size: var(--tamano-cuerpo);
+  line-height: 1.5;
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  -webkit-font-smoothing: antialiased;
 }
+
+h1,
+h2,
+h3,
 p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+a {
+  color: inherit;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+::selection {
+  background-color: var(--color-terciario);
+  color: var(--color-texto);
+}
+
+/* Foco accesible en primario (anillo visible y coherente en toda la app) */
+:where(button, a, input:not([type='checkbox']), textarea, select, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-enfoque);
+  outline-offset: 2px;
 }

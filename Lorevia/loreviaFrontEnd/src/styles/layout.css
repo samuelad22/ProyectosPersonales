@@ -1,0 +1,72 @@
+/* =============================================================
+   Lorevia · Layout (estructura + estilo visual)
+   ============================================================= */
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ---------------- Barra de navegación ---------------- */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--espaciado-unitario) * 4);
+  padding: calc(var(--espaciado-unitario) * 3) calc(var(--espaciado-unitario) * 6);
+  border-bottom: 1px solid var(--color-borde);
+  background-color: var(--color-superficie);
+  box-shadow: 0 1px 0 rgba(44, 36, 80, 0.04), 0 6px 18px rgba(44, 36, 80, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.nav-enlaces {
+  display: flex;
+  gap: calc(var(--espaciado-unitario) * 4);
+}
+
+.nav-enlace {
+  padding: calc(var(--espaciado-unitario) * 1) 0;
+  border-bottom: 2px solid transparent;
+  color: var(--color-muted);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    color var(--duracion-transicion) var(--curva-suave),
+    border-color var(--duracion-transicion) var(--curva-suave);
+}
+
+.nav-enlace:hover {
+  color: var(--color-primario);
+}
+
+.nav-enlace-activo {
+  border-bottom-color: var(--color-primario);
+  color: var(--color-primario);
+}
+
+.nav-usuario {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--espaciado-unitario) * 3);
+}
+
+.nav-usuario-nombre {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-muted);
+  font-size: var(--tamano-pie);
+}
+
+.layout-contenido {
+  flex: 1;
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: calc(var(--espaciado-unitario) * 6);
+}

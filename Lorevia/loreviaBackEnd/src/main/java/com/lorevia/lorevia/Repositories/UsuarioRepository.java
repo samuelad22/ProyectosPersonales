@@ -8,7 +8,7 @@ import com.lorevia.lorevia.models.Usuario;
 
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
-    boolean existsByNombre(String nombre);
-    boolean existsByEmail(String nombre);
-    Optional<Usuario> findByEmail(String nombre);
+    boolean existsByNombreUsuario(String nombreUsuario);
+    boolean existsByEmail(String email);
+    Optional<Usuario> findByEmail(String email);
 }

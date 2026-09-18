@@ -1,0 +1,146 @@
+{
+  "comun": {
+    "nombre": "Name",
+    "descripcion": "Description",
+    "email": "Email",
+    "contrasena": "Password",
+    "editar": "Edit",
+    "eliminar": "Delete",
+    "eliminando": "Deleting...",
+    "cancelar": "Cancel",
+    "guardar": "Save",
+    "guardando": "Saving..."
+  },
+  "idioma": {
+    "etiqueta": "Language",
+    "espanol": "Español",
+    "ingles": "English"
+  },
+  "nav": {
+    "aria": "Main navigation",
+    "libros": "Books",
+    "personajes": "Characters",
+    "categorias": "Categories",
+    "cerrarSesion": "Sign out"
+  },
+  "login": {
+    "titulo": "Sign in",
+    "placeholderEmail": "you@email.com",
+    "placeholderContrasena": "Your password",
+    "cargando": "Signing in...",
+    "errorCredenciales": "Incorrect email or password.",
+    "enlaceRegistro": "Don't have an account? Sign up"
+  },
+  "registro": {
+    "titulo": "Create account",
+    "nombreUsuario": "Username",
+    "placeholderNombreUsuario": "What you want to be called",
+    "nombreReal": "Real name",
+    "placeholderNombreReal": "Your name",
+    "apellidos": "Surname(s)",
+    "placeholderApellidos": "Your surname(s)",
+    "placeholderContrasena": "Create a password",
+    "confirmarContrasena": "Confirm password",
+    "placeholderConfirmacion": "Repeat your password",
+    "cargando": "Creating account...",
+    "boton": "Sign up",
+    "errorCampos": "All fields are required.",
+    "errorEmail": "Enter a valid email.",
+    "errorContrasenas": "Passwords do not match.",
+    "errorRegistro": "Could not complete registration. Try again.",
+    "enlaceLogin": "Already have an account? Sign in"
+  },
+  "modal": {
+    "cerrar": "Close modal"
+  },
+  "libros": {
+    "titulo": "Books",
+    "nuevo": "New book",
+    "cargando": "Loading books...",
+    "vacio": "No books registered yet.",
+    "errorCargar": "Could not load the books.",
+    "verDetalle": "View details",
+    "modalNuevo": "New book",
+    "modalEditar": "Edit book",
+    "eliminarTitulo": "Delete book",
+    "mensajeEliminar": "Are you sure you want to delete the book \"{nombre}\"? This action cannot be undone."
+  },
+  "libroDetalle": {
+    "cargando": "Loading book...",
+    "errorCargar": "Could not load the book.",
+    "volver": "Back to list",
+    "noEncontrado": "Book not found.",
+    "autor": "Author: {autor}",
+    "sinopsis": "Synopsis",
+    "sinSinopsis": "No synopsis.",
+    "categorias": "Categories",
+    "sinCategorias": "No assigned categories.",
+    "personajes": "Characters",
+    "sinPersonajes": "No assigned characters."
+  },
+  "personajes": {
+    "titulo": "Characters",
+    "nuevo": "New character",
+    "cargando": "Loading characters...",
+    "vacio": "No characters registered yet.",
+    "errorCargar": "Could not load the characters.",
+    "sinEspecificar": "Unspecified",
+    "columnaNombre": "Name",
+    "columnaLugarOrigen": "Place of origin",
+    "columnaFechaNacimiento": "Date of birth",
+    "columnaFechaMuerte": "Date of death",
+    "columnaLibros": "Books",
+    "modalNuevo": "New character",
+    "modalEditar": "Edit character",
+    "eliminarTitulo": "Delete character",
+    "mensajeEliminar": "Are you sure you want to delete the character \"{nombre}\"? This action cannot be undone."
+  },
+  "categorias": {
+    "titulo": "Categories",
+    "nuevo": "New category",
+    "cargando": "Loading categories...",
+    "vacio": "No categories registered yet.",
+    "errorCargar": "Could not load the categories.",
+    "columnaNombre": "Name",
+    "columnaDescripcion": "Description",
+    "modalNuevo": "New category",
+    "modalEditar": "Edit category",
+    "eliminarTitulo": "Delete category",
+    "mensajeEliminar": "Are you sure you want to delete the category \"{nombre}\"? This action cannot be undone."
+  },
+  "formularios": {
+    "cargandoOpciones": "Loading options...",
+    "errorNombreObligatorio": "The name is required."
+  },
+  "formularioLibro": {
+    "placeholderNombre": "Book name",
+    "sinopsis": "Synopsis",
+    "placeholderSinopsis": "Book synopsis",
+    "categorias": "Categories",
+    "personajes": "Characters",
+    "errorOpciones": "Could not load categories and characters.",
+    "errorGuardar": "Could not save the book. Try again."
+  },
+  "formularioPersonaje": {
+    "placeholderNombre": "Character name",
+    "lugarOrigen": "Place of origin",
+    "placeholderLugarOrigen": "Character's place of origin",
+    "fechaNacimiento": "Date of birth",
+    "fechaMuerte": "Date of death",
+    "libros": "Books",
+    "errorOpciones": "Could not load the books.",
+    "errorGuardar": "Could not save the character. Try again."
+  },
+  "formularioCategoria": {
+    "placeholderNombre": "Category name",
+    "placeholderDescripcion": "Category description",
+    "errorGuardar": "Could not save the category. Try again."
+  },
+  "tabla": {
+    "acciones": "Actions",
+    "sinRegistros": "No records."
+  },
+  "seleccionMultiple": {
+    "sinOpciones": "No options available."
+  }
+}

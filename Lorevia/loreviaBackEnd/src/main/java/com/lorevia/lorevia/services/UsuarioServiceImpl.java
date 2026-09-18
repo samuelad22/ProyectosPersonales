@@ -5,8 +5,10 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.lorevia.lorevia.Enums.Rol;
 import com.lorevia.lorevia.Repositories.UsuarioRepository;
 import com.lorevia.lorevia.models.Usuario;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -14,9 +16,11 @@ import jakarta.persistence.EntityNotFoundException;
 public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository) {
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -38,18 +42,25 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
     }
 
-    @Override
-    public Usuario save(Usuario usuario) {
-        return usuarioRepository.save(usuario);
-    }
 
     @Override
     public Usuario update(Long id, Usuario usuario) {
         Usuario existing = usuarioRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
-        existing.setNombreUsuario(usuario.getNombreUsuario());
-        existing.setNombreReal(usuario.getNombreReal());
-        existing.setApellidos(usuario.getApellidos());
-        existing.setPassword(usuario.getPassword());
+        if (usuario.getNombreUsuario() != null) {
+            existing.setNombreUsuario(usuario.getNombreUsuario());
+        }
+        if (usuario.getNombreReal() != null) {
+            existing.setNombreReal(usuario.getNombreReal());
+        }
+        if (usuario.getApellidos() != null) {
+            existing.setApellidos(usuario.getApellidos());
+        }
+        if (usuario.getEmail() != null && !usuario.getEmail().isBlank()) {
+            existing.setEmail(usuario.getEmail());
+        }
+        if (usuario.getPassword() != null && !usuario.getPassword().isBlank()) {
+            existing.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
         return usuarioRepository.save(existing);
     }
 
@@ -66,5 +77,13 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public Optional<Usuario> findByEmail(String email) {
         return usuarioRepository.findByEmail(email);
+    }
+    @Override
+    public Usuario save(Usuario usuario) {
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        if (usuario.getRol() == null) {
+            usuario.setRol(Rol.USER);
+        }
+        return usuarioRepository.save(usuario);
     }
 }
