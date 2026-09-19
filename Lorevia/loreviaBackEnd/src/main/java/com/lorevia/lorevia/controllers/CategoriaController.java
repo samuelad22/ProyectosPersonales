@@ -38,7 +38,7 @@ public class CategoriaController {
         return ResponseEntity.ok(categoriaService.findByNombre(nombre));
     }
 
-    @PostMapping("/save")
+    @PostMapping
     public ResponseEntity<Categoria> crear(@Valid @RequestBody CategoriaRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoriaService.crear(request));
     }

@@ -349,7 +349,7 @@
 
 .libro-card-acciones {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: calc(var(--espaciado-unitario) * 2);
   margin-top: auto;
 }
