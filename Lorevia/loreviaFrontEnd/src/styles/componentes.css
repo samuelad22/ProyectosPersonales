@@ -1,7 +1,10 @@
 /* =============================================================
    Lorevia · Componentes (estructura + estilo visual)
    ============================================================= */
-
+/* ---------------- Toogle ---------------- */
+.toogle{
+  display: none;
+}
 /* ---------------- Botones ---------------- */
 .btn {
   display: inline-flex;
@@ -585,4 +588,23 @@
 
 .lista-detalle-item:last-child {
   border-bottom: none;
+}
+
+/* ------------- Selector de idioma ------------- */
+
+.selector-idioma {
+  display: flex;
+  flex-direction: column;
+}
+.idioma{
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.idioma:hover {
+  background-color: var(--color-terciario-suave);
+}
+.pais-bandera-foto{
+  width: 23px;
+  height: auto;
 }
