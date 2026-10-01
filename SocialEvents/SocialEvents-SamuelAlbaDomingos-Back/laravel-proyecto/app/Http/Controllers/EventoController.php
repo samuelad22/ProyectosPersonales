@@ -55,67 +55,89 @@ class EventoController extends Controller
     {
         $user = Auth::user()->id;
         if (User::findOrFail($user)->estado != 0) {
-            return response()->json(['mensaje' => "Debido a tu sancion no puedes borrar este evento"], 403);
+            return response()->json(['error' => 'Cuenta suspendida'], 403);
         }
         if (Evento::where("slug", Str::slug($request->nombre))->first()) {
-            return response()->json(['mensjae' => 'El nombre del evento no esta disponible, cambie el nombre del evento'], 400);
-        }
-        $evento = new Evento();
-        $evento->nombre = ucwords($request->nombre);
-        $evento->slug = Str::slug($request->nombre);
-        $evento->ubicacion = $request->ubicacion;
-        $evento->aforoMaximo = $request->aforoMaximo;
-        $evento->fechaInicio = $request->fechaInicio;
-        $evento->fechaFin = $request->fechaFin;
-        $evento->creador_id = $user;
-        $evento->horaInicio = $request->horaInicio;
-        $evento->horaFin = $request->horaFin;
-        $evento->descripcion = $request->descripcion;
-        $evento->creadorPaypal= Auth::user()->email;
-        $evento->precio = $request->precio;
-        $evento->categoria_id = Categoria::where('nombre', '=', $request->categoria)->value('id');
-        if ($request->hasFile('imagen')) {
-            $nombreArchivo = Str::slug($request->nombre)
-                . '.'
-                . $request->file('imagen')->getClientOriginalExtension();
-            $request->file('imagen')->storeAs('imagenes', $nombreArchivo, 'public');
-            $evento->imagen = 'imagenes/' . $nombreArchivo;
+            return response()->json(['mensaje' => 'El nombre del evento no esta disponible, cambie el nombre del evento'], 400);
         }
 
-        $evento->save();
-
-
-        foreach ($request->tags as $tag) {
-            $tagBuscado = Tag::where('slug', Str::slug($tag))->first();
-            if (!$tagBuscado) {
-                $tagBuscado = Tag::create(['nombre' => ucfirst($tag), 'slug' => Str::slug($tag)]);
+        $evento = DB::transaction(function () use ($request, $user) {
+            $evento = new Evento();
+            $evento->nombre = ucwords($request->nombre);
+            $evento->slug = Str::slug($request->nombre);
+            $evento->ubicacion = $request->ubicacion;
+            $evento->aforoMaximo = $request->aforoMaximo;
+            $evento->fechaInicio = $request->fechaInicio;
+            $evento->fechaFin = $request->fechaFin;
+            $evento->creador_id = $user;
+            $evento->horaInicio = $request->horaInicio;
+            $evento->horaFin = $request->horaFin;
+            $evento->descripcion = $request->descripcion;
+            $evento->creadorPaypal = Auth::user()->email;
+            $evento->precio = $request->precio;
+            $evento->categoria_id = Categoria::where('nombre', '=', $request->categoria)->value('id');
+            if ($request->hasFile('imagen')) {
+                $nombreArchivo = Str::slug($request->nombre)
+                    . '.'
+                    . $request->file('imagen')->getClientOriginalExtension();
+                $request->file('imagen')->storeAs('imagenes', $nombreArchivo, 'public');
+                $evento->imagen = 'imagenes/' . $nombreArchivo;
             }
-            DB::insert('INSERT INTO evento_tag (evento_id, tag_id) VALUES (?, ?)', [$evento->id, $tagBuscado->id]);
-        }
-        Mail::to(User::find($user)->email)->send(new EventoCreado($evento));
+
+            $evento->save();
+
+            foreach ((array) $request->input('tags', []) as $tag) {
+                $tagBuscado = Tag::where('slug', Str::slug($tag))->first();
+                if (!$tagBuscado) {
+                    $tagBuscado = Tag::create(['nombre' => ucfirst($tag), 'slug' => Str::slug($tag)]);
+                }
+                DB::insert('INSERT INTO evento_tag (evento_id, tag_id) VALUES (?, ?)', [$evento->id, $tagBuscado->id]);
+            }
+            Mail::to(User::find($user)->email)->send(new EventoCreado($evento));
+            return $evento;
+        });
+
         return response()->json($evento, 201);
     }
 
     public function update(ActualizarEventoRequest $request)
     {
         $user = $request->user();
+        if ($user->estado != 0) {
+            return response()->json(['error' => 'Cuenta suspendida'], 403);
+        }
         $evento = Evento::findOrFail($request->evento_id);
-        $evento->tags()->detach();
         $imagen = $evento->imagen;
         if ($evento->creador_id != $user->id && $user->rol->nombre != "admin") {
-            return response()->json(["mensaje" => "no tienes permiso para editar este evento"], 403);
+            return response()->json(['error' => 'No estás autorizado para editar este evento'], 403);
         }
-        $evento->precio = $request->precio;
-        $evento->horaFin = $request->horaFin && $request->horaFIn != "" ? $request->horaFin : null;
+
+        if ($request->filled('precio')) {
+            $evento->precio = $request->precio;
+        }
+
+        $evento->horaFin = $request->horaFin && $request->horaFin != "" ? $request->horaFin : null;
+
+        if ($request->filled('categoria')) {
+            $categoria = Categoria::where('nombre', $request->categoria)->first();
+            if ($categoria) {
+                $evento->categoria_id = $categoria->id;
+            }
+        }
+
         $evento->save();
         $evento->update($request->except('imagen'));
 
-        foreach ($request->tags as $tag) {
-            $tagBuscado = Tag::where('slug', Str::slug($tag))->first();
-            if (!$tagBuscado) {
-                $tagBuscado = Tag::create(['nombre' => ucfirst($tag), 'slug' => Str::slug($tag)]);
+        if ($request->filled('tags')) {
+            $evento->tags()->detach();
+            $tags = $request->input('tags', []);
+            foreach ($tags as $tag) {
+                $tagBuscado = Tag::where('slug', Str::slug($tag))->first();
+                if (!$tagBuscado) {
+                    $tagBuscado = Tag::create(['nombre' => ucfirst($tag), 'slug' => Str::slug($tag)]);
+                }
+                DB::insert('INSERT INTO evento_tag (evento_id, tag_id) VALUES (?, ?)', [$evento->id, $tagBuscado->id]);
             }
-            DB::insert('INSERT INTO evento_tag (evento_id, tag_id) VALUES (?, ?)', [$evento->id, $tagBuscado->id]);
         }
 
         if ($request->hasFile('imagen')) {
@@ -142,28 +164,43 @@ class EventoController extends Controller
     public function destroy(Request $request)
     {
         $evento = Evento::findOrFail($request->evento_id);
-        if (User::findOrFail(Auth::id())->estado != 0) {
-            return response()->json(['mensaje' => "Debido a tu sancion no puedes borrar este evento"], 403);
+        $authUser = $request->user();
+        if ($authUser->estado != 0) {
+            return response()->json(['error' => 'Cuenta suspendida'], 403);
         }
 
-        if (Auth::id() == $evento->creador_id || User::findOrFail(Auth::id())->rol->nombre == "admin") {
-            foreach ($evento->users as $user) {
-                Mail::to($user->email)->send(new BorrarEvento($evento));
-                $user = $request->user();
-                $urlBase = "https://api-m.sandbox.paypal.com";
-                $inscripcion = DB::table('inscripciones')
-                    ->where('user_id', $user->id)
-                    ->where('evento_id', $request->evento_id)
-                    ->first();
-                if ($inscripcion?->paypalToken) {
-                    $tokenPaypal = $this->getToken();
-                    Http::withToken($tokenPaypal)
-                        ->withBody('{}', 'application/json')
-                        ->post($urlBase . "/v2/payments/captures/{$inscripcion->paypalToken}/refund");
+        if ($authUser->id == $evento->creador_id || $authUser->rol->nombre == "admin") {
+            $urlBase = "https://api-m.sandbox.paypal.com";
+
+            foreach ($evento->inscripciones as $inscripcion) {
+                Mail::to($inscripcion->email)->send(new BorrarEvento($evento));
+                if ($inscripcion->paypalToken) {
+                    try {
+                        $tokenPaypal = $this->getToken();
+                        Http::withToken($tokenPaypal)
+                            ->withBody('{}', 'application/json')
+                            ->post($urlBase . "/v2/payments/captures/{$inscripcion->paypalToken}/refund");
+                    } catch (Exception $e) {
+                    }
                 }
             }
+
+            foreach (DB::table('cola_espera')->where('evento_id', $evento->id)->get() as $entrada) {
+                Mail::to($entrada->email)->send(new BorrarEvento($evento));
+                if ($entrada->paypalToken) {
+                    try {
+                        $tokenPaypal = $this->getToken();
+                        Http::withToken($tokenPaypal)
+                            ->withBody('{}', 'application/json')
+                            ->post($urlBase . "/v2/payments/captures/{$entrada->paypalToken}/refund");
+                    } catch (Exception $e) {
+                    }
+                }
+            }
+
             $evento->valoraciones()->delete();
             $evento->inscripciones()->delete();
+            DB::table('cola_espera')->where('evento_id', $evento->id)->delete();
 
             $nombreArchivo = basename($evento->imagen);
             try {
@@ -177,19 +214,19 @@ class EventoController extends Controller
             ;
 
         } else {
-            return response()->json(['mensaje' => 'No tienes permiso para borrar este evento'], 403);
+            return response()->json(['error' => 'No tienes permiso para borrar este evento'], 403);
         }
 
     }
     public function obtenerPorEtiquetas(Request $request)
     {
-        $tags = $request->tags;
+        $tags = (array) $request->input('tags', []);
         $eventos = Evento::whereHas('tags', fn($consulta) => $consulta->whereIn('nombre', $tags))->get();
         return EventoResource::collection($eventos);
     }
     public function obtenerPorEtiquetasCategorias(Request $request)
     {
-        $tags = $request->tags;
+        $tags = (array) $request->input('tags', []);
         $categoria_id = $request->categoria_id;
         $eventos = Evento::
             whereHas(
@@ -249,11 +286,14 @@ class EventoController extends Controller
             })
             ->when($request->creador, function ($q) use ($request) {
                 $usuario = User::where('nombreUsuario', $request->creador)->first();
-                $q->where('creador_id', $usuario->id);
+                if ($usuario) {
+                    $q->where('creador_id', $usuario->id);
+                }
             })
             ->when($request->tags, function ($q) use ($request) {
-                $q->whereHas('tags', function ($q2) use ($request) {
-                    $q2->where('nombre', $request->tags);
+                $tags = (array) $request->input('tags', []);
+                $q->whereHas('tags', function ($q2) use ($tags) {
+                    $q2->whereIn('nombre', $tags);
                 });
             })
             ->paginate(21);

@@ -24,7 +24,8 @@ class InscripcionRequest extends FormRequest
         return [
             "evento_id" => "required|integer|exists:eventos,id",
             "mensaje" => "nullable|string",
-            "numeroAcompañantes" => "integer|max:20"
+            "numeroAcompañantes" => "required|integer|min:0|max:20",
+            "paypalToken" => "nullable|string"
         ];
     }
 }

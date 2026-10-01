@@ -5,7 +5,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:80', 'http://192.168.10.169:5173','http://192.168.10.168:5173',
+    'allowed_origins' => ['http://localhost', 'http://localhost:5173', 'http://localhost:3000', 'http://localhost:80', 'http://127.0.0.1', 'http://192.168.10.169:5173','http://192.168.10.168:5173',
                         'https://samuelad26.iesmontenaranco.com:8000',
                         'https://samuelad26.iesmontenaranco.com'],
 

@@ -18,7 +18,7 @@ RUN a2dissite 000-default.conf \
     && a2enmod rewrite proxy proxy_http proxy_wstunnel
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /wait-for-it.sh
 RUN chmod +x /wait-for-it.sh
-RUN cp .env.example .env
+RUN test -f .env || cp .env.example .env
 RUN mkdir -p /var/www/html/storage/app/public/imagenes
 RUN chown -R www-data:www-data /var/www/html/storage
 RUN chmod 775 /var/www/html/storage/app/public/imagenes

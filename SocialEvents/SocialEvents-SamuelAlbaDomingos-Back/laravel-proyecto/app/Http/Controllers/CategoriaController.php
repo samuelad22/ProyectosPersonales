@@ -63,7 +63,7 @@ class CategoriaController extends Controller
      */
     public function destroy(int $id)
     {
-        Categoria::findOrFail($id)->destroy;
+        Categoria::findOrFail($id)->delete();
         return response()->json('Se borro la categoria correctamente', 201);
     }
 }

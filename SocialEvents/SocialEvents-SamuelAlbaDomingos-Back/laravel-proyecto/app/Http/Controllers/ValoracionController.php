@@ -17,6 +17,14 @@ class ValoracionController extends Controller
         if ($user->estado != 0) {
             return response()->json(['mensaje' => "Debido a tu sancion no puedes valorar este evento"], 403);
         }
+        $request->validate([
+            'evento_id' => 'required|integer|exists:eventos,id',
+            'puntuacion' => 'nullable|integer|min:1|max:5',
+            'contenido' => 'nullable|string|max:1000'
+        ]);
+        if ($request->puntuacion === null || $request->puntuacion === '') {
+            return response()->json(['error' => 'Debes valorar con un número de estrellas'], 400);
+        }
         $valoracion = Valoracion::where('user_id', $user->id)
             ->where('evento_id', $request->evento_id)
             ->first();
@@ -51,6 +59,9 @@ class ValoracionController extends Controller
     public function obtenerComentariosPorCreador(Request $request)
     {
         $usuario = User::where('email', $request->email)->first();
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
         $historialValoraciones = Valoracion::where('user_id', $usuario->id)->where('contenido', '!=', 'null')->where('contenido', '!=', '')->get();
         return ComentarioResource::collection($historialValoraciones);
     }
@@ -58,13 +69,11 @@ class ValoracionController extends Controller
     {
         $usuario = $request->user();
         $comentario = Valoracion::findOrFail($request->comentario_id);
-        if ($comentario->user_id == $usuario->id || $usuario->id == 1) {
-            $comentario->contenido = null;
-            $comentario->save();
+        if ($comentario->user_id != $usuario->id && $usuario->rol->nombre != 'admin') {
+            return response()->json(['error' => 'No autorizado'], 403);
         }
-        else {
-            return response()->json(["mensaje"=> "no tienes permiso para borrar este comentario"], 404);
-        }
+        $comentario->contenido = null;
+        $comentario->save();
         return response()->json(["mensaje"=> "se borro el comentario correctamente"], 201);
     }
 }

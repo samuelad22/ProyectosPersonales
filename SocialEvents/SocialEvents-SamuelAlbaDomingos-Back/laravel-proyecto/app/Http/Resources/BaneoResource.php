@@ -15,7 +15,7 @@ class BaneoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            "nombre"=> $this->nombre,
+            "nombre"=> $this->nombreUsuario,
             "motivo_veto"=> $this->motivoVeto,
             "vetado_hasta"=> $this->vetadoHasta,
         ];

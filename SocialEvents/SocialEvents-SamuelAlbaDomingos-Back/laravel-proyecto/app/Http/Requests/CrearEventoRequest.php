@@ -17,9 +17,10 @@ class CrearEventoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => 'required|string|max:255',
+            'nombre' => 'required|string|max:255|regex:/^[^\r\n]+$/u',
             'ubicacion' => 'required|string|max:255',
             'aforoMaximo' => 'required|integer|min:1',
+            'precio' => 'required|numeric|min:0',
             'fechaInicio' => 'required|date|after:today',
             'fechaFin' => 'nullable|date|after_or_equal:fechaInicio',
             'horaInicio' => 'required|date_format:H:i',
