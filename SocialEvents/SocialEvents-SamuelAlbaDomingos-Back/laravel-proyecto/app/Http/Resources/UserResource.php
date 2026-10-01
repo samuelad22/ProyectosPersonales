@@ -14,12 +14,15 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-
         return [
+            'id' => $this->id,
             'nombre' => $this->nombreUsuario,
-            'estado' => $this->estado,
-            'email' => $this->email,
+            'nombreCompleto' => $this->nombreCompleto,
+            'nombreUsuario' => $this->nombreUsuario,
+            'rol' => $this->rol,
             'intereses' => $this->intereses,
+            'imagen' => $this->imagen,
+            'localidadResidencia' => $this->localidadResidencia,
         ];
     }
 }

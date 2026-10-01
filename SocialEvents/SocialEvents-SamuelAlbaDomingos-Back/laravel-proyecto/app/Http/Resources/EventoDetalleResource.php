@@ -22,7 +22,7 @@ class EventoDetalleResource extends JsonResource
             'horaInicio' => \Carbon\Carbon::parse($this->horaInicio)->format('H:i'),
             'horaFin' => $this->horaFin ? \Carbon\Carbon::parse($this->horaFin)->format('H:i') : null,
             'descripcion' => $this->descripcion,
-            'creador' => User::find($this->creador_id)->nombreUsuario,
+            'creador' => User::find($this->creador_id)?->nombreUsuario,
             'precio' => $this->precio,
             'tags' => $this->tags->pluck('nombre'),
             'categoria' => [
@@ -30,12 +30,14 @@ class EventoDetalleResource extends JsonResource
                 'nombre' => $this->categoria?->nombre,
                 'color' => $this->categoria?->color
             ],
-            'comentarios' => $this->valoraciones->map(function ($valoracion) {
+            'comentarios' => $this->valoraciones->filter(function ($valoracion) {
+                return $valoracion->contenido !== null && $valoracion->contenido !== '';
+            })->map(function ($valoracion) {
                 return [
                     'id' => $valoracion->id,
                     'fecha' => $valoracion->fecha,
                     'contenido' => $valoracion->contenido,
-                    'usuario' => User::find($valoracion->user_id)->nombreUsuario,
+                    'usuario' => User::find($valoracion->user_id)?->nombreUsuario,
                     'creador_id' => $valoracion->user_id
                 ];
             }),

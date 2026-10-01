@@ -19,6 +19,10 @@ class ConversacionController extends Controller
 {
     public function enviarMensaje(Request $request)
     {
+        if ($request->user()->estado != 0) {
+            return response()->json(['error' => 'Cuenta suspendida'], 403);
+        }
+
         $request->validate([
             "contenido" => "required|string",
             "destinatarios" => "required|array",
@@ -75,6 +79,10 @@ class ConversacionController extends Controller
 
     public function obtenerConversacionesPorUsuario(Request $request)
     {
+        if ($request->user()->estado != 0) {
+            return response()->json(['error' => 'Cuenta suspendida'], 403);
+        }
+
         $conversaciones = Conversacion::with(['usuarios', 'ultimoMensaje'])
             ->whereHas('usuarios', function ($q) {
                 $q->where('user_id', Auth::user()->id);
@@ -99,6 +107,11 @@ class ConversacionController extends Controller
             return response()->json(["mensaje" => "No existe esta conversacion"], 403);
         }
 
+        $userId = $request->user()->id;
+        if (!$conversacion->usuarios->contains($userId)) {
+            return response()->json(["error" => "No tienes acceso a esta conversación"], 403);
+        }
+
         $mensajes = Mensaje::where('conversacion_id', $conversacion->id)
             ->orderBy('created_at', 'desc')
             ->take(50)
@@ -108,6 +121,17 @@ class ConversacionController extends Controller
     public function marcarLeido(Request $request)
     {
         $user = Auth::user();
+        $conversacionId = $request->conversacion_id;
+        $conversacion = Conversacion::find($conversacionId);
+
+        if (!$conversacion) {
+            return response()->json(["error" => "No se ha encontrado la conversacion"], 404);
+        }
+
+        if (!$conversacion->usuarios->contains($user->id)) {
+            return response()->json(["error" => "No tienes acceso a esta conversación"], 403);
+        }
+
         Mensaje::where('conversacion_id', $request->conversacion_id)
             ->where('remitente_id', '!=', $user->id)
             ->where('leido', false)
@@ -119,6 +143,10 @@ class ConversacionController extends Controller
 
     public function mensajesNoLeidos()
     {
+        if (Auth::user()->estado != 0) {
+            return response()->json(['error' => 'Cuenta suspendida'], 403);
+        }
+
         $notificaciones = Mensaje::where('leido', 0)
             ->where('remitente_id', '!=', Auth::user()->id)
             ->whereIn('conversacion_id', function ($q) {

@@ -17,7 +17,7 @@ class IAController extends Controller
             'Authorization' => 'Bearer ' . env('GROK_API_KEY'),
             'Content-Type' => 'application/json',
         ])->post('https://api.groq.com/openai/v1/chat/completions', [
-                    'model' => 'llama-3.1-8b-instant',
+                    'model' => 'openai/gpt-oss-20b',
                     'messages' => [
                         [
                             'role' => 'system',
@@ -35,12 +35,21 @@ class IAController extends Controller
                             'content' => 'Dame un dato curioso'
                         ]
                     ],
-                    'max_tokens' => 150,
+                    'max_tokens' => 300,
                     'temperature' => 0.7,
+                    'reasoning_effort' => 'low',
                 ]);
 
+        if (!$response->successful()) {
+            return response()->json(['error' => 'Groq rechazó la solicitud'], 502);
+        }
+
         $data = $response->json();
-        $texto = $data['choices'][0]['message']['content'];
+        $texto = data_get($data, 'choices.0.message.content');
+
+        if (!$texto) {
+            return response()->json(['error' => 'Groq no devolvió contenido'], 502);
+        }
 
         return response()->json(['dato' => $texto]);
     }
@@ -79,7 +88,7 @@ class IAController extends Controller
             'Authorization' => 'Bearer ' . env('GROK_API_KEY'),
             'Content-Type' => 'application/json',
         ])->post('https://api.groq.com/openai/v1/chat/completions', [
-                    'model' => 'llama-3.3-70b-versatile',
+                    'model' => 'openai/gpt-oss-20b',
                     'max_tokens' => 200,
                     'temperature' => 0.7,
                     'messages' => [

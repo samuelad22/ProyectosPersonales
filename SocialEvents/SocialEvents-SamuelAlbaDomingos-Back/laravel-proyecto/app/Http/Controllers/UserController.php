@@ -30,7 +30,7 @@ class UserController extends Controller
         if($user->estado == 1) {
             return response()->json(['error' => 'Su cuenta ha sido vetada permanentemente'], 402);
         }
-        else if ( $user->estado == 2 && $user->vetadoHasta > now()){
+        else if ($user->estado == 2 && ($user->vetadoHasta === null || $user->vetadoHasta > now())){
             return response()->json(['error'=> 'Su cuenta ha sido vetada temporalmente'], 402);
         }
         $user->estado = 0;
@@ -43,7 +43,7 @@ class UserController extends Controller
         else {
             $tokenBasico = $user->createToken('token-basico', ['crear-evento']);
         }
-        return ['token' => $tokenBasico->plainTextToken, 'id' => $user->id, 'nombreUsuario' => $user->nombreUsuario, 'estado'=> $user->estado, 'rol'=> $user->id==1 ? 'admin':'usuario'];
+        return ['token' => $tokenBasico->plainTextToken, 'id' => $user->id, 'nombreUsuario' => $user->nombreUsuario, 'estado'=> $user->estado, 'rol'=> $user->rol->nombre];
     }
 
     public function store(UsuarioRequest $request)
@@ -64,9 +64,10 @@ class UserController extends Controller
             'localidadResidencia' => $request->localidadResidencia,
             'password' => Hash::make($request->password),
             'estado' => 0, //Usuario habilitado
-            'rol_id'=> 1 //Usuario con permisos base
         ]);
-        foreach ($request->intereses as $interes) {
+        $usuario->rol_id = 1;
+        $usuario->save();
+        foreach ($request->input('intereses', []) as $interes) {
             $tagBuscado = Tag::where('slug', Str::slug($interes))->first();
             if (!$tagBuscado) {
                 $tagBuscado = Tag::create(['nombre' => ucfirst($interes), 'slug' => Str::slug($interes)]);
@@ -100,22 +101,27 @@ class UserController extends Controller
         } else if ($usuario->nombreUsuario != $request->nombreUsuario && User::where('nombreUsuario', $request->nombreUsuario)->first()) {
             return response()->json(['mensaje' => 'Este nombre de usuario ya esta en uso'], 422);
         }
-        $usuario->update($request->all());
+
+        $camposActualizables = $request->only([
+            'nombreCompleto', 'nombreUsuario', 'email', 'localidadResidencia'
+        ]);
+        $usuario->update($camposActualizables);
 
         $usuario->intereses()->detach();
-        foreach ($request->intereses as $interes) {
+        foreach ($request->input('intereses', []) as $interes) {
             $tagBuscado = Tag::where('slug', Str::slug($interes))->first();
             if (!$tagBuscado) {
                 $tagBuscado = Tag::create(['nombre' => ucfirst($interes), 'slug' => Str::slug($interes)]);
             }
             DB::insert('INSERT INTO intereses (user_id, tag_id) VALUES (?, ?)', [$usuario->id, $tagBuscado->id]);
         }
-        if ($usuario->id == 1) {
-            $tokenBasico = $usuario->createToken('token-basico', ['crear-evento', 'administrar-usuarios']);
+
+        if ($usuario->rol->nombre === "admin") {
+            $tokenBasico = $usuario->createToken('token-basico', ['crear-evento', 'administrar-usuarios', 'administrar-tags', 'administrar-categorias', 'administrar-pagos', 'gestionar-entradas']);
         } else {
             $tokenBasico = $usuario->createToken('token-basico', ['crear-evento']);
         }
-        return ['token' => $tokenBasico->plainTextToken, 'id' => $usuario->id, 'nombreUsuario' => $usuario->nombreUsuario, 'rol'=> $usuario->id==1 ? 'admin':'usuario'];
+        return ['token' => $tokenBasico->plainTextToken, 'id' => $usuario->id, 'nombreUsuario' => $usuario->nombreUsuario, 'rol' => $usuario->rol->nombre];
     }
     public function listarUsuarios(Request $request)
 {
@@ -138,16 +144,28 @@ public function recomendarUsuario(Request $request) {
         return new UserResource($usuario);
 }
 
-    public function vetarCuentaTemporalmente(Request $request) {
-        $usuario= User::where('email', $request->email)->first();
+    public function vetarCuentaTemporalmente(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'fechaLimiteVeto' => 'required|date|after:today',
+            'motivoVeto' => 'nullable|string'
+        ]);
+        $usuario = User::where('email', $request->email)->first();
+        if ($usuario === null) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
         $usuario->estado = 2;
         $usuario->vetadoHasta = $request->fechaLimiteVeto;
-        $usuario->motivoVeto = $request->motivoVeto;
+        $usuario->motivoVeto = $request->motivoVeto ?? 'Sin motivo';
         $usuario->save();
-        return response()->json(['mensaje'=>'Se he vetado la cuenta correctamente hasta '. $request->fechaLimiteVeto], 201);
+        return response()->json(['message' => 'Cuenta vetada temporalmente'], 200);
     }
      public function vetarCuentaPermanentemente(Request $request) {
         $usuario= User::where('email', $request->email)->first();
+        if ($usuario === null) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
         $usuario->estado = 1;
         $usuario->motivoVeto = $request->motivoVeto;
         $usuario->save();
@@ -155,6 +173,9 @@ public function recomendarUsuario(Request $request) {
     }
     public function eliminarVeto(Request $request) {
         $usuario= User::where('email', $request->email)->first();
+        if ($usuario === null) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
         $usuario->estado = 0;
         $usuario->motivoVeto = null;
         $usuario->vetadoHasta = null;

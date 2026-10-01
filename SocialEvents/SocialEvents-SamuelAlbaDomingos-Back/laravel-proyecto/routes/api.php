@@ -33,9 +33,8 @@ Route::post('/eventos/filtroPagar', [EventoController::class, 'filtrarEventosPag
 Route::get('/eventos/{categoria}', [EventoController::class, 'buscarPorCategoria']);
 Route::get('/eventos/detalle/{id}', [EventoController::class, 'show']);
 //TAGS
-Route::get('/tags', [TagController::class, 'index']);
-Route::post('/tag/crear', [TagController::class, 'store']);
-Route::delete('/tags/borrar', [TagController::class, 'destroy']);
+Route::post('/tag/crear', [TagController::class, 'store'])->middleware(['auth:sanctum', 'abilities:administrar-tags']);
+Route::delete('/tags/borrar', [TagController::class, 'destroy'])->middleware(['auth:sanctum', 'abilities:administrar-tags']);
 Route::get('/tags', [TagController::class, 'listarTags'])->middleware(['auth:sanctum', 'abilities:administrar-tags']);
 Route::post('/tags/buscarPorNombre', [TagController::class, 'buscarTagsPorNombre'])->middleware(['auth:sanctum', 'abilities:administrar-tags']);
 Route::put('/tags/actualizar', [TagController::class, 'update'])->middleware(['auth:sanctum', 'abilities:administrar-tags']);

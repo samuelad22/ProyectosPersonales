@@ -20,28 +20,50 @@ class InscripcionController extends Controller
 {
     public function store(InscripcionRequest $request)
     {
-        $evento = Evento::findOrFail($request->evento_id);
         $user = $request->user();
 
-        // --- Validaciones previas ---
-        if ($user->estado != 0) {
-            return response()->json(['mensaje' => 'Debido a tu sancion no puedes inscribirte a ningun evento ni entrar en cola'], 403);
-        }
-        if ($evento->fechaInicio < now()) {
-            return response()->json(['mensaje' => 'El evento ya paso, no podemos inscribirte'], 400);
-        }
+        return DB::transaction(function () use ($request, $user) {
+            $evento = Evento::where('id', $request->evento_id)->lockForUpdate()->first();
 
-        $yaInscrito = Inscripcion::where('evento_id', $evento->id)->where('user_id', $user->id)->exists();
-        $yaEnCola = ColaEspera::where('evento_id', $evento->id)->where('user_id', $user->id)->exists();
+            if (!$evento) {
+                return response()->json(['error' => 'Evento no encontrado'], 404);
+            }
 
-        if ($yaInscrito || $yaEnCola) {
-            return response()->json(['mensaje' => 'Ya estas inscrito en este evento o en su lista de espera'], 400);
-        }
+            // --- Validaciones previas ---
+            if ($user->estado != 0) {
+                return response()->json(['mensaje' => 'Debido a tu sancion no puedes inscribirte a ningun evento ni entrar en cola'], 403);
+            }
+            if ($evento->fechaInicio < now()) {
+                return response()->json(['mensaje' => 'El evento ya paso, no podemos inscribirte'], 400);
+            }
 
-        $total = $request->numeroAcompañantes + 1;
-        $libres = $evento->aforoMaximo - $evento->aforoActual;
+            $yaInscrito = Inscripcion::where('evento_id', $evento->id)->where('user_id', $user->id)->exists();
+            $yaEnCola = ColaEspera::where('evento_id', $evento->id)->where('user_id', $user->id)->exists();
 
-        return DB::transaction(function () use ($request, $evento, $user, $total, $libres) {
+            if ($yaInscrito || $yaEnCola) {
+                return response()->json(['mensaje' => 'Ya estas inscrito en este evento o en su lista de espera'], 400);
+            }
+
+            // --- Verificar pago PayPal en eventos de pago ---
+            if ($evento->precio > 0) {
+                if (!$request->paypalToken) {
+                    return response()->json(['error' => 'Falta token de pago'], 400);
+                }
+                try {
+                    $tokenPaypal = $this->getToken();
+                    $pago = Http::withToken($tokenPaypal)
+                        ->get("https://api-m.sandbox.paypal.com/v2/payments/captures/{$request->paypalToken}")
+                        ->json();
+                    if (($pago['status'] ?? '') !== 'COMPLETED') {
+                        return response()->json(['error' => 'Pago no completado'], 400);
+                    }
+                } catch (\Exception $e) {
+                    return response()->json(['error' => 'Error al verificar el pago con PayPal'], 400);
+                }
+            }
+
+            $total = $request->numeroAcompañantes + 1;
+            $libres = $evento->aforoMaximo - $evento->aforoActual;
 
             // --- CASO 1: No hay aforo, todo a cola ---
             if ($libres <= 0) {
@@ -64,9 +86,12 @@ class InscripcionController extends Controller
                 $evento->save();
 
                 $inscripcion = Inscripcion::where('evento_id', $evento->id)->where('user_id', $user->id)->first();
-                Mail::to($user->email)->send(
-                    new ConfirmacionInscripcion($evento, $user, $inscripcion->qr_token, $request->numeroAcompañantes)
-                );
+                try {
+                    Mail::to($user->email)->send(
+                        new ConfirmacionInscripcion($evento, $user, $inscripcion->qr_token, $request->numeroAcompañantes)
+                    );
+                } catch (\Exception $e) {
+                }
                 return response()->json([
                     'mensaje' => 'Entraron ' . $libres . ' de tu grupo. Los ' . ($total - $libres) . ' restantes quedan en lista de espera'
                 ], 200);
@@ -79,9 +104,12 @@ class InscripcionController extends Controller
             $evento->dineroGenerado += $this->calcularPrecio($total, $evento->precio);
             $evento->save();
             $inscripcion = Inscripcion::where('evento_id', $evento->id)->where('user_id', $user->id)->first();
-            Mail::to($user->email)->send(
-                new ConfirmacionInscripcion($evento, $user, $inscripcion->qr_token, $request->numeroAcompañantes)
-            );
+            try {
+                Mail::to($user->email)->send(
+                    new ConfirmacionInscripcion($evento, $user, $inscripcion->qr_token, $request->numeroAcompañantes)
+                );
+            } catch (\Exception $e) {
+            }
 
             return response()->json('Inscripción realizada con éxito', 200);
         });
@@ -90,8 +118,11 @@ class InscripcionController extends Controller
 
     public function destroy(BorrarInscripcionRequest $request)
     {
-        $evento = Evento::findOrFail($request->evento_id);
         $user = $request->user();
+        if ($user->estado != 0) {
+            return response()->json(['error' => 'Cuenta suspendida'], 403);
+        }
+        $evento = Evento::findOrFail($request->evento_id);
 
         if ($evento->fechaInicio < now()) {
             return response()->json(['mensaje' => 'El evento ya paso, no podemos borrar la inscripcion'], 400);
@@ -109,13 +140,17 @@ class InscripcionController extends Controller
 
             // Cancelar parte en cola si existe (parcial o total)
             if ($enCola) {
-                $this->devolverDinero($enCola->paypalToken);
+                if (!$this->devolverDinero($enCola->paypalToken)) {
+                    return response()->json(['error' => 'No se pudo procesar el reembolso'], 400);
+                }
                 $enCola->delete();
             }
 
             // Cancelar parte confirmada si existe
             if ($inscripcion) {
-                $this->devolverDinero($inscripcion?->paypalToken);
+                if (!$this->devolverDinero($inscripcion->paypalToken)) {
+                    return response()->json(['error' => 'No se pudo procesar el reembolso'], 400);
+                }
 
                 $totalConfirmado = $inscripcion->acompañantes + 1;
                 $precioFinal = $this->calcularPrecio($totalConfirmado, $evento->precio);
@@ -209,7 +244,7 @@ class InscripcionController extends Controller
 
                 if ($inscripcionExistente) {
                     // Sumar los nuevos confirmados a la fila existente
-                    $inscripcionExistente->acompañantes += $necesita;
+                    $inscripcionExistente->acompañantes += $entrada->acompañantes;
                     $inscripcionExistente->save();
 
                 } else {
@@ -232,14 +267,17 @@ class InscripcionController extends Controller
                     ->where('user_id', $entrada->user_id)
                     ->first();
 
-                Mail::to($entrada->email)->send(
-                    new ConfirmacionInscripcion(
-                        $evento,
-                        $user,
-                        $inscripcion->qr_token,
-                        $inscripcion->acompañantes
-                    )
-                );
+                try {
+                    Mail::to($entrada->email)->send(
+                        new ConfirmacionInscripcion(
+                            $evento,
+                            $user,
+                            $inscripcion->qr_token,
+                            $inscripcion->acompañantes
+                        )
+                    );
+                } catch (\Exception $e) {
+                }
 
             } else {
                 // Caben algunos — inscripcion parcial desde cola
@@ -250,7 +288,7 @@ class InscripcionController extends Controller
                     ->first();
 
                 if ($inscripcionExistente) {
-                    $inscripcionExistente->acompañantes += $libres;
+                    $inscripcionExistente->acompañantes += $acompañantesConfirmados;
                     $inscripcionExistente->save();
                 } else {
                     $this->insertarEnInscripciones(
@@ -264,14 +302,17 @@ class InscripcionController extends Controller
                 $entrada->acompañantes = $entrada->acompañantes - $acompañantesConfirmados - 1;
                 $entrada->save();
 
-                $evento->aforoActual = $evento->aforoMaximo;
+                $evento->aforoActual += $libres;
                 $evento->dineroGenerado += $this->calcularPrecio($libres, $evento->precio);
 
                 $inscripcion = Inscripcion::where('evento_id', $evento->id)
                     ->where('user_id', $entrada->user_id)
                     ->first();
 
-                Mail::to($entrada->email)->send(new AvanceColaTotal($inscripcion, $evento, $user));
+                try {
+                    Mail::to($entrada->email)->send(new AvanceColaTotal($inscripcion, $evento, $user));
+                } catch (\Exception $e) {
+                }
             }
 
             $evento->save();
@@ -297,8 +338,15 @@ class InscripcionController extends Controller
             ], 400);
         }
 
+        $actualizada = DB::table('inscripciones')
+            ->where('id', $inscripcion->id)
+            ->where('qr_usado', 0)
+            ->update(['qr_usado' => 1]);
+        if ($actualizada === 0) {
+            return response()->json(['error' => 'La entrada ya ha sido validada o no existe'], 400);
+        }
+
         $inscripcion->qr_usado = true;
-        $inscripcion->save();
 
         return new EntradaValidadaResource($inscripcion);
     }
@@ -331,15 +379,20 @@ class InscripcionController extends Controller
         };
     }
 
-    private function devolverDinero(?string $paypalToken): void
+    private function devolverDinero(?string $paypalToken): bool
     {
         if (!$paypalToken)
-            return;
+            return true;
 
-        $tokenPaypal = $this->getToken();
-        Http::withToken($tokenPaypal)
-            ->withBody('{}', 'application/json')
-            ->post("https://api-m.sandbox.paypal.com/v2/payments/captures/{$paypalToken}/refund");
+        try {
+            $tokenPaypal = $this->getToken();
+            Http::withToken($tokenPaypal)
+                ->withBody('{}', 'application/json')
+                ->post("https://api-m.sandbox.paypal.com/v2/payments/captures/{$paypalToken}/refund");
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     public function getToken(): string

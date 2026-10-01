@@ -23,9 +23,10 @@ class ChatsResource extends JsonResource
                     'id' => $u->id,
                     'nombreUsuario' => $u->nombreUsuario,
                 ]),
-            'ultimoMensaje' => $this->whenLoaded('ultimoMensaje', fn() => [
-                'contenido' => $this->ultimoMensaje->contenido,
-                'visto' => Auth::user()->id == $this->ultimoMensaje->remitente_id ? 1 : $this->ultimoMensaje->leido
+            'ultimoMensaje' => $this->when($this->ultimoMensaje !== null, fn () => [
+                "contenido" => $this->ultimoMensaje->contenido,
+                "created_at" => $this->ultimoMensaje->created_at,
+                "visto" => Auth::user()->id == $this->ultimoMensaje->remitente_id ? 1 : $this->ultimoMensaje->leido,
             ]),
         ];
     }
